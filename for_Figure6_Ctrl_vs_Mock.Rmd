@@ -1,0 +1,67 @@
+---
+title: "for_Figure6_siCtrl_vs_GFPonly"
+author: "Kanon Omura, Kei IIDA"
+output: html_document
+date: "2026-10-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# for_Figure6_siCtrl_vs_GFPonly
+To set up the embironment, please see another file; for_Figure1.Rmd
+
+
+## 1. read rnk file
+```{r}
+GLT_rnk_siCtrl <- read.table("GLT_associated_siCtrl_vs_GFPonly.rnk", header = FALSE, sep = "\t")
+```
+
+## 2. obtain gmt file from the web
+read library
+```{r}
+library(clusterProfiler)
+```
+
+```{r}
+gmt <- read.gmt("https://data.broadinstitute.org/gsea-msigdb/msigdb/release/2025.1.Mm/m5.go.bp.v2025.1.Mm.symbols.gmt")
+```
+
+
+## 3. GSEA
+```{r}
+# make geneList
+geneList <- GLT_rnk_siCtrl$V2
+names(geneList) <- GLT_rnk_siCtrl$V1
+
+geneList <- sort(geneList, decreasing = TRUE)
+
+#remove duplicattions
+geneList <- geneList[!duplicated(names(geneList))]
+
+#set random seed
+set.seed(123)
+
+#do GSEA
+Fig6_siCtrl_vs_GFPonly_GSEA <- GSEA(geneList, TERM2GENE = gmt, pvalueCutoff = 1)
+Fig6_siCtrl_vs_GFPonly_GSEA@result <- Fig6_siCtrl_vs_GFPonly_GSEA@result[
+  Fig6_siCtrl_vs_GFPonly_GSEA@result$qvalue < 0.25, 
+]
+```
+
+
+check results
+```{r}
+head(Fig6_siCtrl_vs_GFPonly_GSEA@result)
+```
+
+Write the result
+```{r, eval=FALSE}
+write.csv(Fig6_siCtrl_vs_GFPonly_GSEA@result, file="Fig6_siCtrl_vs_GFPonly.csv")
+```
+
+```{r}
+sessionInfo()
+```
+
